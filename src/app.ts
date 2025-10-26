@@ -24,7 +24,7 @@ const swaggerOptions = {
   definition: {
     openapi: '3.0.0',
     info: {
-      title: 'API RESTful Jesus Tadelmo',
+      title: 'API RESTful Juan Dawaher',
       version: '1.0.0',
       description: 'API desarrollada con Node.js, Express y TypeScript. **Instrucciones:** Para probar los endpoints protegidos, primero registra un usuario en `/auth/register` o inicia sesión en `/auth/login`, copia el token de la respuesta, y haz clic en el botón **Authorize** 🔓 (arriba a la derecha) para ingresarlo.',
     },
@@ -115,7 +115,7 @@ app.use('/users', userRoutes);
 *                       example: 31576161
 *                     seccion:
 *                       type: string
-*                       example: A1
+*                       example: Seccion 2
 */
 
 app.get('/about', (req: Request, res: Response) => {
