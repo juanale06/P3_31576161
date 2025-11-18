@@ -1,6 +1,7 @@
 import dotenv from 'dotenv';
 dotenv.config();
-import {app,syncDatabase} from './app';
+
+import {app,syncDatabase} from './app.js';
 
 const PORT = process.env.PORT || 3000;
 

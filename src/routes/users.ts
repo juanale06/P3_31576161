@@ -1,7 +1,7 @@
 import { Request, Response, Router } from 'express';
-import User from '../models/User.model';
-import { generateToken } from '../utils/jwt';
-import { authenticateToken } from '../middlewares/auth';
+import User from '../models/User.model.js';
+import { generateToken } from '../utils/jwt.js';
+import { authenticateToken } from '../middlewares/auth.js';
 
 const router = Router();
 

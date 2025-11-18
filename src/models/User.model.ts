@@ -11,7 +11,7 @@ class User extends Model {
     autoIncrement: true,
     primaryKey: true,
   })
-  id!: number;
+  declare id: number;
 
   @Column({
     type: DataType.STRING,
@@ -42,7 +42,9 @@ class User extends Model {
 
   @BeforeCreate
   static async hashPasswordBeforeCreate(user: User) {
-    user.password = bcrypt.hashSync(user.password, 10);
+    if (user.password && !user.password.startsWith('$2')) {
+      user.password = bcrypt.hashSync(user.password, 10);
+    }
   }
 
   @BeforeUpdate
@@ -50,7 +52,9 @@ class User extends Model {
     // Check if password field was changed
     const changedFields = user.changed() as string[] | boolean;
     if (changedFields && (changedFields === true || (Array.isArray(changedFields) && changedFields.includes('password')))) {
-      user.password = bcrypt.hashSync(user.password, 10);
+      if (user.password && !user.password.startsWith('$2')) {
+        user.password = bcrypt.hashSync(user.password, 10);
+      }
     }
   }
 }

@@ -5,11 +5,13 @@ import morgan from 'morgan';
 import swaggerUi from 'swagger-ui-express';
 import swaggerJsdoc from 'swagger-jsdoc';
 // Routes
-import authRoutes from './routes/auth';
-import userRoutes from './routes/users';
+import authRoutes from './routes/auth.js';
+import userRoutes from './routes/users.js';
+import productRoutes, { selfHealingRouter } from './routes/products.js';
+import categoryRoutes from './routes/categories.js';
+import tagRoutes from './routes/tags.js';
 
-import sequelize from './config/database';
-import User from './models/User.model';
+import sequelize from './config/database.js';
 
 const app = express();
 
@@ -24,10 +26,65 @@ const swaggerOptions = {
   definition: {
     openapi: '3.0.0',
     info: {
-      title: 'API RESTful Juan Dawaher',
+      title: 'API RESTful - Tienda de Vinilos',
       version: '1.0.0',
-      description: 'API desarrollada con Node.js, Express y TypeScript. **Instrucciones:** Para probar los endpoints protegidos, primero registra un usuario en `/auth/register` o inicia sesión en `/auth/login`, copia el token de la respuesta, y haz clic en el botón **Authorize** 🔓 (arriba a la derecha) para ingresarlo.',
+      description: `
+# API RESTful para Tienda de Vinilos
+API desarrollada con Node.js, Express, TypeScript y Sequelize.
+
+## 🔐 Autenticación
+Para probar los endpoints protegidos:
+1. Registra un usuario en \`/auth/register\` o inicia sesión en \`/auth/login\`
+2. Copia el token JWT de la respuesta
+3. Haz clic en el botón **Authorize** 🔓 (arriba a la derecha)
+4. Ingresa el token en el formato: \`Bearer <tu-token>\`
+
+## 📚 Características
+- **Autenticación JWT**: Registro y login de usuarios
+- **Gestión de Productos**: CRUD completo de vinilos con atributos personalizados
+- **Categorías y Tags**: Organización y clasificación de productos
+- **Búsqueda Avanzada**: Filtros múltiples, paginación y ordenamiento
+- **Self-Healing URLs**: URLs amigables con redirección automática
+- **Formato JSend**: Respuestas estandarizadas
+
+## 👤 Desarrollado por
+**Juan Dawaher** - Cédula: 31576161 - Sección 2
+      `,
+      contact: {
+        name: 'Juan Dawaher',
+        email: 'juanD@example.com',
+      },
     },
+    tags: [
+      { 
+        name: 'Auth', 
+        description: '🔐 Autenticación y registro de usuarios' 
+      },
+      { 
+        name: 'Users', 
+        description: '👥 Gestión de usuarios (requiere autenticación)' 
+      },
+      { 
+        name: 'Products - Público', 
+        description: '🎵 Endpoints públicos de vinilos - Listado, búsqueda y detalle (sin autenticación)' 
+      },
+      { 
+        name: 'Products - Gestión', 
+        description: '🔒 Gestión de vinilos - Crear, actualizar y eliminar (requiere autenticación)' 
+      },
+      { 
+        name: 'Categories', 
+        description: '📁 Gestión de categorías de vinilos (requiere autenticación)' 
+      },
+      { 
+        name: 'Tags', 
+        description: '🏷️ Gestión de etiquetas para vinilos (requiere autenticación)' 
+      },
+      { 
+        name: 'System', 
+        description: '⚙️ Endpoints del sistema' 
+      },
+    ],
     servers: [
       {
         url: 'http://localhost:3000',
@@ -40,28 +97,106 @@ const swaggerOptions = {
           type: 'http',
           scheme: 'bearer',
           bearerFormat: 'JWT',
-          description: 'Ingresa tu token JWT obtenido de /auth/register o /auth/login',
+          description: 'Autenticación mediante token JWT. Formato: Bearer <token>',
         },
       },
       schemas: {
-        UserResponse: {
+        User: {
           type: 'object',
           properties: {
             id: { type: 'integer', example: 1 },
             nombreCompleto: { type: 'string', example: 'Juan Dawaher' },
-            email: { type: 'string', example: 'juanD@example.com' },
+            email: { type: 'string', format: 'email', example: 'juan@example.com' },
             createdAt: { type: 'string', format: 'date-time' },
             updatedAt: { type: 'string', format: 'date-time' },
           },
         },
-        AuthResponse: {
+        Category: {
           type: 'object',
           properties: {
-            user: { $ref: '#/components/schemas/UserResponse' },
-            token: { type: 'string', example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9TYUGIAHOJSDHAS' },
+            id: { type: 'integer', example: 1 },
+            name: { type: 'string', example: 'Rock' },
+            description: { type: 'string', example: 'Música rock de todas las épocas' },
+            createdAt: { type: 'string', format: 'date-time' },
+            updatedAt: { type: 'string', format: 'date-time' },
           },
         },
-        ErrorResponse: {
+        Tag: {
+          type: 'object',
+          properties: {
+            id: { type: 'integer', example: 1 },
+            name: { type: 'string', example: 'Vintage' },
+            createdAt: { type: 'string', format: 'date-time' },
+            updatedAt: { type: 'string', format: 'date-time' },
+          },
+        },
+        Product: {
+          type: 'object',
+          properties: {
+            id: { type: 'integer', example: 1 },
+            name: { type: 'string', example: 'Dark Side of the Moon' },
+            slug: { type: 'string', example: 'dark-side-of-the-moon-a1b2c3d4' },
+            description: { type: 'string', example: 'Álbum icónico de Pink Floyd de 1973' },
+            price: { type: 'number', format: 'float', example: 45.99 },
+            stock: { type: 'integer', example: 5 },
+            artist: { type: 'string', example: 'Pink Floyd' },
+            label: { type: 'string', example: 'Harvest Records' },
+            releaseYear: { type: 'integer', example: 1973 },
+            format: { type: 'string', enum: ['LP', 'EP', 'Single', '7"', '10"', '12"'], example: 'LP' },
+            condition: { type: 'string', enum: ['Mint', 'Near Mint', 'Very Good Plus', 'Very Good', 'Good Plus', 'Good'], example: 'Near Mint' },
+            sku: { type: 'string', example: 'PF-DSOTM-1973' },
+            isActive: { type: 'boolean', example: true },
+            userId: { type: 'integer', example: 1 },
+            categoryId: { type: 'integer', example: 1 },
+            category: { $ref: '#/components/schemas/Category' },
+            tags: {
+              type: 'array',
+              items: { $ref: '#/components/schemas/Tag' },
+            },
+            createdAt: { type: 'string', format: 'date-time' },
+            updatedAt: { type: 'string', format: 'date-time' },
+          },
+        },
+        ProductInput: {
+          type: 'object',
+          required: ['name', 'price', 'categoryId'],
+          properties: {
+            name: { type: 'string', example: 'Dark Side of the Moon' },
+            description: { type: 'string', example: 'Álbum icónico de Pink Floyd de 1973' },
+            price: { type: 'number', format: 'float', example: 45.99 },
+            stock: { type: 'integer', example: 5, default: 0 },
+            categoryId: { type: 'integer', example: 1 },
+            artist: { type: 'string', example: 'Pink Floyd' },
+            label: { type: 'string', example: 'Harvest Records' },
+            releaseYear: { type: 'integer', example: 1973 },
+            format: { type: 'string', example: 'LP' },
+            condition: { type: 'string', example: 'Near Mint' },
+            sku: { type: 'string', example: 'PF-DSOTM-1973' },
+            isActive: { type: 'boolean', example: true, default: true },
+            tagIds: {
+              type: 'array',
+              items: { type: 'integer' },
+              example: [1, 2],
+            },
+          },
+        },
+        Pagination: {
+          type: 'object',
+          properties: {
+            currentPage: { type: 'integer', example: 1 },
+            itemsPerPage: { type: 'integer', example: 10 },
+            totalItems: { type: 'integer', example: 50 },
+            totalPages: { type: 'integer', example: 5 },
+          },
+        },
+        JSendSuccess: {
+          type: 'object',
+          properties: {
+            status: { type: 'string', example: 'success' },
+            data: { type: 'object' },
+          },
+        },
+        JSendFail: {
           type: 'object',
           properties: {
             status: { type: 'string', example: 'fail' },
@@ -71,6 +206,13 @@ const swaggerOptions = {
                 message: { type: 'string', example: 'Descripción del error' },
               },
             },
+          },
+        },
+        JSendError: {
+          type: 'object',
+          properties: {
+            status: { type: 'string', example: 'error' },
+            message: { type: 'string', example: 'Error interno del servidor' },
           },
         },
       },
@@ -85,17 +227,22 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // Rutas
 app.use('/auth', authRoutes);
-app.use('/users', userRoutes);      
+app.use('/users', userRoutes);
+app.use('/categories', categoryRoutes);
+app.use('/tags', tagRoutes);
+app.use('/products', productRoutes);
+app.use('/p', selfHealingRouter); // Self-healing URL router      
 
 /**
 * @swagger
 * /about:
 *   get:
-*     summary: Obtiene información del estudiante
-*     description: Retorna un objeto JSON con el nombre completo, cédula y sección del estudiante
+*     summary: Información del estudiante
+*     description: Retorna información del desarrollador de la API (nombre completo, cédula y sección)
+*     tags: [System]
 *     responses:
 *       200:
-*         description: Respuesta exitosa
+*         description: Información del estudiante
 *         content:
 *           application/json:
 *             schema:
@@ -115,10 +262,9 @@ app.use('/users', userRoutes);
 *                       example: 31576161
 *                     seccion:
 *                       type: string
-*                       example: Seccion 2
+*                       example: SECCIÓN 2
 */
-
-app.get('/about', (req: Request, res: Response) => {
+app.get('/about', (_req: Request, res: Response) => {
   res.status(200).json({
     status: 'success',
     data: {
@@ -133,14 +279,14 @@ app.get('/about', (req: Request, res: Response) => {
 * @swagger
 * /ping:
 *   get:
-*     summary: Verifica que el servidor está funcionando
-*     description: Retorna un estado 200 OK sin contenido
+*     summary: Health check del servidor
+*     description: Verifica que el servidor está funcionando correctamente. Retorna un estado 200 OK sin contenido.
+*     tags: [System]
 *     responses:
 *       200:
 *         description: Servidor funcionando correctamente
 */
-//este endpoint sirve para verificar que el servidor está activo
-app.get('/ping', (req: Request, res: Response) => {
+app.get('/ping', (_req: Request, res: Response) => {
   res.status(200).send();
 });
 
@@ -157,6 +303,9 @@ app.get('/', (req: Request, res: Response) => {
         login: '/auth/login',
       },
       users: '/users',
+      products: '/products',
+      categories: '/categories',
+      tags: '/tags',
     },
   });
 });

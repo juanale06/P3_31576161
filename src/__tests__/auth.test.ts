@@ -1,6 +1,6 @@
 import request from 'supertest';
-import {app} from '../app';
-import sequelize from '../config/database';
+import {app} from '../app.js';
+import sequelize from '../config/database.js';
 import { beforeAll, afterAll, describe, it, expect } from '@jest/globals';
 
 beforeAll(async () => {

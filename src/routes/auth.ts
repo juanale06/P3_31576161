@@ -1,6 +1,6 @@
 import { Request, Response, Router } from 'express';
-import User from '../models/User.model';
-import { generateToken } from '../utils/jwt';
+import User from '../models/User.model.js';
+import { generateToken } from '../utils/jwt.js';
 
 const router = Router();
 
