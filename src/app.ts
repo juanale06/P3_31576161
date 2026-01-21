@@ -10,6 +10,7 @@ import userRoutes from './routes/users.js';
 import productRoutes, { selfHealingRouter } from './routes/products.js';
 import categoryRoutes from './routes/categories.js';
 import tagRoutes from './routes/tags.js';
+import orderRoutes from './routes/orders.js';
 
 import sequelize from './config/database.js';
 
@@ -56,33 +57,37 @@ Para probar los endpoints protegidos:
       },
     },
     tags: [
-      { 
-        name: 'Auth', 
-        description: '🔐 Autenticación y registro de usuarios' 
+      {
+        name: 'Auth',
+        description: '🔐 Autenticación y registro de usuarios'
       },
-      { 
-        name: 'Users', 
-        description: '👥 Gestión de usuarios (requiere autenticación)' 
+      {
+        name: 'Users',
+        description: '👥 Gestión de usuarios (requiere autenticación)'
       },
-      { 
-        name: 'Products - Público', 
-        description: '🎵 Endpoints públicos de vinilos - Listado, búsqueda y detalle (sin autenticación)' 
+      {
+        name: 'Products - Público',
+        description: '🎵 Endpoints públicos de vinilos - Listado, búsqueda y detalle (sin autenticación)'
       },
-      { 
-        name: 'Products - Gestión', 
-        description: '🔒 Gestión de vinilos - Crear, actualizar y eliminar (requiere autenticación)' 
+      {
+        name: 'Products - Gestión',
+        description: '🔒 Gestión de vinilos - Crear, actualizar y eliminar (requiere autenticación)'
       },
-      { 
-        name: 'Categories', 
-        description: '📁 Gestión de categorías de vinilos (requiere autenticación)' 
+      {
+        name: 'Categories',
+        description: '📁 Gestión de categorías de vinilos (requiere autenticación)'
       },
-      { 
-        name: 'Tags', 
-        description: '🏷️ Gestión de etiquetas para vinilos (requiere autenticación)' 
+      {
+        name: 'Tags',
+        description: '🏷️ Gestión de etiquetas para vinilos (requiere autenticación)'
       },
-      { 
-        name: 'System', 
-        description: '⚙️ Endpoints del sistema' 
+      {
+        name: 'Orders',
+        description: '🛒 Gestión de órdenes y checkout (requiere autenticación)'
+      },
+      {
+        name: 'System',
+        description: '⚙️ Endpoints del sistema'
       },
     ],
     servers: [
@@ -109,6 +114,54 @@ Para probar los endpoints protegidos:
             email: { type: 'string', format: 'email', example: 'juan@example.com' },
             createdAt: { type: 'string', format: 'date-time' },
             updatedAt: { type: 'string', format: 'date-time' },
+          },
+        },
+        UserResponse: {
+          type: 'object',
+          properties: {
+            status: { type: 'string', example: 'success' },
+            data: {
+              type: 'object',
+              properties: {
+                id: { type: 'integer', example: 1 },
+                nombreCompleto: { type: 'string', example: 'Juan Dawaher' },
+                email: { type: 'string', format: 'email', example: 'juan@example.com' },
+                createdAt: { type: 'string', format: 'date-time' },
+                updatedAt: { type: 'string', format: 'date-time' },
+              },
+            },
+          },
+        },
+        AuthResponse: {
+          type: 'object',
+          properties: {
+            status: { type: 'string', example: 'success' },
+            data: {
+              type: 'object',
+              properties: {
+                user: {
+                  type: 'object',
+                  properties: {
+                    id: { type: 'integer', example: 1 },
+                    nombreCompleto: { type: 'string', example: 'Juan Dawaher' },
+                    email: { type: 'string', format: 'email', example: 'juan@example.com' },
+                  },
+                },
+                token: { type: 'string', example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...' },
+              },
+            },
+          },
+        },
+        ErrorResponse: {
+          type: 'object',
+          properties: {
+            status: { type: 'string', example: 'fail' },
+            data: {
+              type: 'object',
+              properties: {
+                message: { type: 'string', example: 'Token de acceso requerido' },
+              },
+            },
           },
         },
         Category: {
@@ -215,6 +268,36 @@ Para probar los endpoints protegidos:
             message: { type: 'string', example: 'Error interno del servidor' },
           },
         },
+        Order: {
+          type: 'object',
+          properties: {
+            id: { type: 'integer', example: 1 },
+            userId: { type: 'integer', example: 1 },
+            status: {
+              type: 'string',
+              enum: ['PENDING', 'COMPLETED', 'CANCELED', 'PAYMENT_FAILED'],
+              example: 'COMPLETED'
+            },
+            totalAmount: { type: 'number', format: 'decimal', example: 99.99 },
+            items: {
+              type: 'array',
+              items: { $ref: '#/components/schemas/OrderItem' }
+            },
+            createdAt: { type: 'string', format: 'date-time' },
+            updatedAt: { type: 'string', format: 'date-time' }
+          },
+        },
+        OrderItem: {
+          type: 'object',
+          properties: {
+            id: { type: 'integer', example: 1 },
+            orderId: { type: 'integer', example: 1 },
+            productId: { type: 'integer', example: 5 },
+            quantity: { type: 'integer', example: 2 },
+            unitPrice: { type: 'number', format: 'decimal', example: 45.99 },
+            product: { $ref: '#/components/schemas/Product' }
+          },
+        },
       },
     },
     security: [],
@@ -231,6 +314,7 @@ app.use('/users', userRoutes);
 app.use('/categories', categoryRoutes);
 app.use('/tags', tagRoutes);
 app.use('/products', productRoutes);
+app.use('/orders', orderRoutes);
 app.use('/p', selfHealingRouter); // Self-healing URL router      
 
 /**
@@ -306,6 +390,7 @@ app.get('/', (req: Request, res: Response) => {
       products: '/products',
       categories: '/categories',
       tags: '/tags',
+      orders: '/orders',
     },
   });
 });
@@ -323,4 +408,4 @@ const syncDatabase = async () => {
   }
 };
 
-export {app,syncDatabase};
+export { app, syncDatabase };
