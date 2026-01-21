@@ -8,6 +8,7 @@ import Tag from '../models/Tag.model.js';
 import ProductTag from '../models/ProductTag.model.js';
 import Order from '../models/Order.model.js';
 import OrderItem from '../models/OrderItem.model.js';
+import { initializeAssociations } from '../models/associations.js';
 
 // Determinar el directorio base
 const isTest = process.env.NODE_ENV === 'test' || process.env.JEST_WORKER_ID !== undefined;
@@ -21,5 +22,8 @@ const sequelize = new Sequelize({
   logging: false,
   models: [User, Category, Tag, Product, ProductTag, Order, OrderItem],
 });
+
+// Initialize associations after models are registered
+initializeAssociations();
 
 export default sequelize;

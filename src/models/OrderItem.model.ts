@@ -1,5 +1,4 @@
 import { Table, Column, Model, DataType, ForeignKey, BelongsTo } from 'sequelize-typescript';
-import type Order from './Order.model.js';
 import Product from './Product.model.js';
 
 @Table({
@@ -14,15 +13,14 @@ class OrderItem extends Model {
     })
     declare id: number;
 
-    @ForeignKey(() => require('./Order.model.js').default)
     @Column({
         type: DataType.INTEGER,
         allowNull: false,
     })
     orderId!: number;
 
-    @BelongsTo(() => require('./Order.model.js').default)
-    order!: Order;
+    // Association defined in associations.ts
+    order!: any;
 
     @ForeignKey(() => Product)
     @Column({

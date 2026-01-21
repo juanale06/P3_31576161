@@ -1,5 +1,4 @@
-import { Table, Column, Model, DataType, ForeignKey, BelongsTo, HasMany } from 'sequelize-typescript';
-import type OrderItem from './OrderItem.model.js';
+import { Table, Column, Model, DataType, ForeignKey, BelongsTo } from 'sequelize-typescript';
 import User from './User.model.js';
 
 export enum OrderStatus {
@@ -44,8 +43,8 @@ class Order extends Model {
   })
   totalAmount!: number;
 
-  @HasMany(() => require('./OrderItem.model.js').default)
-  items?: OrderItem[];
+  // Association defined in associations.ts
+  items?: any[];
 
   declare createdAt: Date;
   declare updatedAt: Date;
