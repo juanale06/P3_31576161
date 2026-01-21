@@ -1,6 +1,6 @@
 import { Table, Column, Model, DataType, ForeignKey, BelongsTo, HasMany } from 'sequelize-typescript';
+import type OrderItem from './OrderItem.model.js';
 import User from './User.model.js';
-import OrderItem from './OrderItem.model.js';
 
 export enum OrderStatus {
   PENDING = 'PENDING',
@@ -44,7 +44,7 @@ class Order extends Model {
   })
   totalAmount!: number;
 
-  @HasMany(() => OrderItem)
+  @HasMany(() => require('./OrderItem.model.js').default)
   items?: OrderItem[];
 
   declare createdAt: Date;

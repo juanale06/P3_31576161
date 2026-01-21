@@ -1,5 +1,5 @@
 import { Table, Column, Model, DataType, ForeignKey, BelongsTo } from 'sequelize-typescript';
-import Order from './Order.model.js';
+import type Order from './Order.model.js';
 import Product from './Product.model.js';
 
 @Table({
@@ -14,14 +14,14 @@ class OrderItem extends Model {
     })
     declare id: number;
 
-    @ForeignKey(() => Order)
+    @ForeignKey(() => require('./Order.model.js').default)
     @Column({
         type: DataType.INTEGER,
         allowNull: false,
     })
     orderId!: number;
 
-    @BelongsTo(() => Order)
+    @BelongsTo(() => require('./Order.model.js').default)
     order!: Order;
 
     @ForeignKey(() => Product)
