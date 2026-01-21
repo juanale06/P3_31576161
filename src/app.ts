@@ -394,7 +394,7 @@ app.get('/', (req: Request, res: Response) => {
     },
   });
 });
-
+//proyecto generado por la lacra(Juan Dawaher)Z
 const syncDatabase = async () => {
   try {
     await sequelize.authenticate();
