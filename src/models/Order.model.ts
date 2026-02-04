@@ -18,7 +18,7 @@ class Order extends Model {
     autoIncrement: true,
     primaryKey: true,
   })
-  declare id: number;
+  id!: number;
 
   @ForeignKey(() => User)
   @Column({

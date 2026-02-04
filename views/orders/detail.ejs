@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>
+    <%= title %>
+  </title>
+  <link rel="stylesheet" href="/css/main.css">
+</head>
+
+<body>
+  <%- include('../partials/header') %>
+
+    <main class="container">
+      <div style="margin: 2rem 0;">
+        <a href="/orders" class="nav-link">← Volver a Mis Pedidos</a>
+      </div>
+
+      <div id="order-container">
+        <div class="loading-container">
+          <div class="spinner"></div>
+          <p>Cargando detalle del pedido...</p>
+        </div>
+      </div>
+    </main>
+
+    <%- include('../partials/footer') %>
+
+      <script src="/js/ui.js"></script>
+      <script src="/js/api.js"></script>
+      <script src="/js/auth.js"></script>
+      <script src="/js/cart.js"></script>
+
+      <script>
+        // Check authentication
+        if (!authManager.requireAuth()) {
+          // Will redirect to login
+        }
+
+        const orderId = <%= orderId %>;
+
+        async function loadOrder() {
+          try {
+            const response = await api.getOrderById(orderId);
+            const order = response.data.order;
+            displayOrder(order);
+          } catch (error) {
+            document.getElementById('order-container').innerHTML = `
+          <div class="empty-state">
+            <h2>Pedido no encontrado</h2>
+            <p>${error.message}</p>
+            <a href="/orders" class="btn btn-primary">Volver a Mis Pedidos</a>
+          </div>
+        `;
+          }
+        }
+
+        function displayOrder(order) {
+          document.getElementById('order-container').innerHTML = `
+        <div class="card">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem; margin-bottom: 2rem;">
+            <div>
+              <h1>Pedido #${order.id}</h1>
+              <p style="color: var(--text-secondary); font-size: 1.1rem;">${formatDate(order.createdAt)}</p>
+            </div>
+            <span class="order-status order-status-${order.status.toLowerCase()}" style="font-size: 1rem; padding: 0.5rem 1rem;">
+              ${getStatusText(order.status)}
+            </span>
+          </div>
+          
+          <h2>Productos Ordenados</h2>
+          <div style="margin-top: 1rem;">
+            ${order.items.map(item => `
+              <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; padding: 1rem; border-bottom: 1px solid var(--border-color);">
+                <div>
+                  <h3>${item.product ? item.product.name : 'Producto'}</h3>
+                  <p style="color: var(--text-secondary);">
+                    ${item.product && item.product.artist ? item.product.artist : ''}
+                  </p>
+                  <p>Cantidad: ${item.quantity}</p>
+                  <p>Precio unitario: $${parseFloat(item.unitPrice).toFixed(2)}</p>
+                </div>
+                <div style="text-align: right; min-width: 120px;">
+                  <p><strong>Subtotal:</strong></p>
+                  <p style="font-size: 1.25rem; font-weight: bold; color: var(--primary-color);">
+                    $${(parseFloat(item.unitPrice) * item.quantity).toFixed(2)}
+                  </p>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+          
+          <div class="cart-total" style="margin-top: 1.5rem;">
+            <strong>Total del Pedido:</strong> $${parseFloat(order.totalAmount).toFixed(2)}
+          </div>
+        </div>
+      `;
+        }
+
+        function getStatusText(status) {
+          const statusMap = {
+            'COMPLETED': 'Completado',
+            'PENDING': 'Pendiente',
+            'CANCELED': 'Cancelado',
+            'PAYMENT_FAILED': 'Pago Fallido'
+          };
+          return statusMap[status] || status;
+        }
+
+        // Load order on page load
+        loadOrder();
+      </script>
+</body>
+
+</html>

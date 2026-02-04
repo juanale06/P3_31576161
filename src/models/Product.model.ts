@@ -24,7 +24,7 @@ class Product extends Model {
     type: DataType.STRING,
     allowNull: false,
   })
-  name!: string;
+  declare name: string;
 
   @Column({
     type: DataType.STRING,
@@ -37,20 +37,20 @@ class Product extends Model {
     type: DataType.TEXT,
     allowNull: true,
   })
-  description?: string;
+  declare description?: string;
 
   @Column({
     type: DataType.DECIMAL(10, 2),
     allowNull: false,
   })
-  price!: number;
+  declare price: number;
 
   @Column({
     type: DataType.INTEGER,
     allowNull: false,
     defaultValue: 0,
   })
-  stock!: number;
+  declare stock: number;
 
   // Atributos específicos para Vinilos
   @Column({

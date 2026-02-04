@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>
+        <%= title %>
+    </title>
+    <link rel="stylesheet" href="/css/main.css">
+</head>
+
+<body>
+    <%- include('../partials/header') %>
+
+        <main class="container">
+            <h1 style="margin: 2rem 0;">Carrito de Compras</h1>
+
+            <div id="cart-container"></div>
+
+            <div id="cart-total-container"></div>
+
+            <div style="text-align: right; margin-top: 2rem;">
+                <button id="checkout-btn" class="btn btn-primary" onclick="goToCheckout()">
+                    Proceder al Checkout
+                </button>
+            </div>
+        </main>
+
+        <%- include('../partials/footer') %>
+
+            <script src="/js/ui.js"></script>
+            <script src="/js/api.js"></script>
+            <script src="/js/auth.js"></script>
+            <script src="/js/cart.js"></script>
+
+            <script>
+                function displayCart() {
+                    const cart = cartManager.getCart();
+                    const container = document.getElementById('cart-container');
+                    const totalContainer = document.getElementById('cart-total-container');
+
+                    if (cart.length === 0) {
+                        container.innerHTML = `
+          <div class="empty-state">
+            <h2>Tu carrito está vacío</h2>
+            <p>Agrega productos desde nuestro catálogo</p>
+            <a href="/" class="btn btn-primary">Ir al Catálogo</a>
+          </div>
+        `;
+                        totalContainer.innerHTML = '';
+                        document.getElementById('checkout-btn').style.display = 'none';
+                        return;
+                    }
+
+                    container.innerHTML = `
+        <div class="card">
+          ${cart.map(item => `
+            <div class="cart-item">
+              <div class="cart-item-info">
+                <h3>${item.name}</h3>
+                <p class="product-artist">${item.artist || 'Artista Desconocido'}</p>
+                <p><strong>Precio unitario:</strong> $${item.price.toFixed(2)}</p>
+              </div>
+              
+              <div class="cart-item-actions">
+                <input 
+                  type="number" 
+                  class="form-input quantity-input" 
+                  value="${item.quantity}" 
+                  min="1" 
+                  max="${item.stock}"
+                  onchange="updateQuantity(${item.id}, this.value)">
+                
+                <p><strong>Subtotal:</strong> $${(item.price * item.quantity).toFixed(2)}</p>
+                
+                <button class="btn btn-danger btn-sm" onclick="removeItem(${item.id})">
+                  Eliminar
+                </button>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      `;
+
+                    const total = cartManager.getTotal();
+                    totalContainer.innerHTML = `
+        <div class="card">
+          <div class="cart-total">
+            <strong>Total:</strong> $${total.toFixed(2)}
+          </div>
+        </div>
+      `;
+                }
+
+                function updateQuantity(productId, quantity) {
+                    quantity = parseInt(quantity);
+                    if (quantity > 0) {
+                        cartManager.updateQuantity(productId, quantity);
+                        displayCart();
+                    }
+                }
+
+                function removeItem(productId) {
+                    if (confirm('¿Estás seguro de eliminar este producto del carrito?')) {
+                        cartManager.removeFromCart(productId);
+                        displayCart();
+                        showNotification('Producto eliminado del carrito', 'success');
+                    }
+                }
+
+                function goToCheckout() {
+                    if (!authManager.isAuthenticated()) {
+                        showNotification('Debes iniciar sesión para continuar', 'warning');
+                        window.location.href = '/login?redirect=/checkout';
+                        return;
+                    }
+
+                    window.location.href = '/checkout';
+                }
+
+                // Display cart on page load
+                displayCart();
+            </script>
+</body>
+
+</html>

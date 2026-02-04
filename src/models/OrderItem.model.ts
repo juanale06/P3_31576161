@@ -1,5 +1,6 @@
 import { Table, Column, Model, DataType, ForeignKey, BelongsTo } from 'sequelize-typescript';
 import Product from './Product.model.js';
+import Order from './Order.model.js';
 
 @Table({
     tableName: 'OrderItems',
@@ -13,6 +14,7 @@ class OrderItem extends Model {
     })
     declare id: number;
 
+    @ForeignKey(() => Order)
     @Column({
         type: DataType.INTEGER,
         allowNull: false,
@@ -39,13 +41,13 @@ class OrderItem extends Model {
             min: 1,
         },
     })
-    quantity!: number;
+    declare quantity: number;
 
     @Column({
         type: DataType.DECIMAL(10, 2),
         allowNull: false,
     })
-    unitPrice!: number;
+    declare unitPrice: number;
 
     declare createdAt: Date;
     declare updatedAt: Date;

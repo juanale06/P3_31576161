@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>
+    <%= title %>
+  </title>
+  <link rel="stylesheet" href="/css/main.css">
+</head>
+
+<body>
+  <%- include('../partials/header') %>
+
+    <main class="container">
+      <div id="product-container">
+        <div class="loading-container">
+          <div class="spinner"></div>
+          <p>Cargando producto...</p>
+        </div>
+      </div>
+    </main>
+
+    <%- include('../partials/footer') %>
+
+      <script src="/js/ui.js"></script>
+      <script src="/js/api.js"></script>
+      <script src="/js/auth.js"></script>
+      <script src="/js/cart.js"></script>
+
+      <script>
+        const slug = '<%= slug %>';
+
+        async function loadProduct() {
+          try {
+            const response = await api.getProductBySlug(slug);
+            const product = response.data.product;
+            displayProduct(product);
+          } catch (error) {
+            document.getElementById('product-container').innerHTML = `
+          <div class="empty-state">
+            <h2>Producto no encontrado</h2>
+            <p>${error.message}</p>
+            <a href="/" class="btn btn-primary">Volver al catálogo</a>
+          </div>
+        `;
+          }
+        }
+
+        function displayProduct(product) {
+          document.getElementById('product-container').innerHTML = `
+        <div style="margin: 2rem 0;">
+          <a href="/" class="nav-link">← Volver al catálogo</a>
+        </div>
+        
+        <div class="card">
+          <div class="grid-2">
+            <div style="background: linear-gradient(135deg, var(--primary-light), var(--primary-color)); aspect-ratio: 1; border-radius: var(--border-radius); display: flex; align-items: center; justify-content: center; color: white; font-size: 8rem;">
+              🎵
+            </div>
+            
+            <div>
+              <h1>${product.name}</h1>
+              <p style="font-size: 1.25rem; color: var(--text-secondary); margin: 0.5rem 0;">${product.artist || 'Artista Desconocido'}</p>
+              
+              <p style="font-size: 2rem; font-weight: bold; color: var(--primary-color); margin: 1rem 0;">
+                $${parseFloat(product.price).toFixed(2)}
+              </p>
+              
+              <div style="margin: 1.5rem 0;">
+                <p><strong>Descripción:</strong> ${product.description || 'Sin descripción'}</p>
+                <p><strong>Sello:</strong> ${product.label || 'N/A'}</p>
+                <p><strong>Año:</strong> ${product.releaseYear || 'N/A'}</p>
+                <p><strong>Formato:</strong> ${product.format || 'N/A'}</p>
+                <p><strong>Condición:</strong> ${product.condition || 'N/A'}</p>
+                <p><strong>Stock:</strong> ${product.stock} unidades</p>
+                ${product.category ? `<p><strong>Categoría:</strong> ${product.category.name}</p>` : ''}
+                ${product.tags && product.tags.length > 0 ? `
+                  <p><strong>Tags:</strong> ${product.tags.map(t => t.name).join(', ')}</p>
+                ` : ''}
+              </div>
+              
+              <div style="display: flex; gap: 1rem; align-items: center;">
+                <label for="quantity">Cantidad:</label>
+                <input 
+                  type="number" 
+                  id="quantity" 
+                  class="form-input" 
+                  value="1" 
+                  min="1" 
+                  max="${product.stock}"
+                  style="width: 80px;">
+                
+                <button 
+                  class="btn btn-primary"
+                  onclick="addToCart()"
+                  ${product.stock === 0 ? 'disabled' : ''}>
+                  ${product.stock === 0 ? 'Sin Stock' : 'Agregar al Carrito'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+        }
+
+        function addToCart() {
+          const response = api.getProductBySlug(slug);
+          response.then(res => {
+            const product = res.data.product;
+            const quantity = parseInt(document.getElementById('quantity').value);
+
+            if (quantity > product.stock) {
+              showNotification('Cantidad no disponible en stock', 'error');
+              return;
+            }
+
+            cartManager.addToCart(product, quantity);
+          });
+        }
+
+        // Load product on page load
+        loadProduct();
+      </script>
+</body>
+
+</html>

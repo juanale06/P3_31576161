@@ -78,10 +78,8 @@ router.post('/', authenticateToken, createCategory);
  * /categories:
  *   get:
  *     summary: Obtener todas las categorías
- *     description: Lista todas las categorías disponibles. Requiere autenticación.
+ *     description: Lista todas las categorías disponibles. Acceso público.
  *     tags: [Categories]
- *     security:
- *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: Lista de categorías obtenida exitosamente
@@ -100,14 +98,8 @@ router.post('/', authenticateToken, createCategory);
  *                       type: array
  *                       items:
  *                         $ref: '#/components/schemas/Category'
- *       401:
- *         description: No autorizado - Token faltante o inválido
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/JSendFail'
  */
-router.get('/', authenticateToken, getAllCategories);
+router.get('/', getAllCategories);
 
 /**
  * @swagger

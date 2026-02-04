@@ -1,4 +1,5 @@
 import sequelize from '../config/database.js';
+import User from '../models/User.model.js';
 import Product from '../models/Product.model.js';
 import { OrderStatus } from '../models/Order.model.js';
 import { OrderRepository } from '../repositories/OrderRepository.js';
@@ -82,6 +83,12 @@ export class OrderService {
     ): Promise<Order> {
         // Start transaction
         return await sequelize.transaction(async (t) => {
+            // 0. Verify user existence
+            const user = await User.findByPk(userId, { transaction: t });
+            if (!user) {
+                throw new Error('User not found. Please log in again.');
+            }
+
             // 1. Validate and fetch products
             const productIds = items.map((item) => item.productId);
             const products = await Product.findAll({

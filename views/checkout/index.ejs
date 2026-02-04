@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>
+        <%= title %>
+    </title>
+    <link rel="stylesheet" href="/css/main.css">
+</head>
+
+<body>
+    <%- include('../partials/header') %>
+
+        <main class="container">
+            <h1 style="margin: 2rem 0;">Checkout</h1>
+
+            <div class="grid-2">
+                <!-- Order Summary -->
+                <div>
+                    <div class="card">
+                        <h2>Resumen del Pedido</h2>
+                        <div id="order-summary"></div>
+                        <div class="cart-total" id="order-total"></div>
+                    </div>
+
+                    <div class="card"
+                        style="margin-top: 2rem; background-color: #f8f9fa; border: 1px dashed var(--primary-color);">
+                        <h3 style="margin-bottom: 1rem; color: var(--primary-color);">💳 Tarjetas de Prueba</h3>
+                        <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1rem;">Haz clic para
+                            copiar el número:</p>
+
+                        <div class="test-cards-list">
+                            <div class="test-card-item">
+                                <span><strong>Visa:</strong> 4111111111111111</span>
+                                <button class="btn btn-sm btn-outline"
+                                    onclick="copyToClipboard('4111111111111111', this)">Copiar</button>
+                            </div>
+                            <div class="test-card-item">
+                                <span><strong>Mastercard:</strong> 5555555555554444</span>
+                                <button class="btn btn-sm btn-outline"
+                                    onclick="copyToClipboard('5555555555554444', this)">Copiar</button>
+                            </div>
+                            <div class="test-card-item">
+                                <span><strong>Amex:</strong> 378282246310005</span>
+                                <button class="btn btn-sm btn-outline"
+                                    onclick="copyToClipboard('378282246310005', this)">Copiar</button>
+                            </div>
+                            <div class="test-card-item">
+                                <span><strong>Discover:</strong> 6011111111111117</span>
+                                <button class="btn btn-sm btn-outline"
+                                    onclick="copyToClipboard('6011111111111117', this)">Copiar</button>
+                            </div>
+                            <div class="test-card-item">
+                                <span><strong>JCB:</strong> 3530111333300000</span>
+                                <button class="btn btn-sm btn-outline"
+                                    onclick="copyToClipboard('3530111333300000', this)">Copiar</button>
+                            </div>
+                            <div class="test-card-item">
+                                <span><strong>Diners:</strong> 30569309025904</span>
+                                <button class="btn btn-sm btn-outline"
+                                    onclick="copyToClipboard('30569309025904', this)">Copiar</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Payment Form -->
+                <div>
+                    <div class="card">
+                        <h2>Información de Pago</h2>
+                        <p style="color: var(--text-secondary); margin-bottom: 1rem; font-size: 0.9rem;">
+                            <em>Nota: Esta es una simulación. Usa "APPROVED" como nombre en la tarjeta para aprobar o
+                                "DECLINED" para rechazar.</em>
+                        </p>
+
+                        <div id="error-container" style="display: none;"></div>
+                        <div id="success-container" style="display: none;"></div>
+
+                        <form id="payment-form">
+                            <div class="form-group">
+                                <label for="cardNumber" class="form-label">Número de Tarjeta</label>
+                                <input type="text" id="cardNumber" class="form-input" placeholder="4111111111111111"
+                                    required maxlength="16">
+                            </div>
+
+                            <div class="grid-2" style="gap: 1rem;">
+                                <div class="form-group">
+                                    <label for="expirationMonth" class="form-label">Mes</label>
+                                    <input type="text" id="expirationMonth" class="form-input" placeholder="12" required
+                                        maxlength="2">
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="expirationYear" class="form-label">Año</label>
+                                    <input type="text" id="expirationYear" class="form-input" placeholder="2026"
+                                        required maxlength="4">
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="cvv" class="form-label">CVV</label>
+                                <input type="text" id="cvv" class="form-input" placeholder="123" required maxlength="3">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="cardholderName" class="form-label">Nombre en la Tarjeta</label>
+                                <input type="text" id="cardholderName" class="form-input"
+                                    placeholder="APPROVED o DECLINED" required>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary" style="width: 100%;" id="submit-btn">
+                                Confirmar Compra
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <%- include('../partials/footer') %>
+
+            <script src="/js/ui.js"></script>
+            <script src="/js/api.js"></script>
+            <script src="/js/auth.js"></script>
+            <script src="/js/cart.js"></script>
+
+            <script>
+                // Check authentication
+                if (!authManager.requireAuth()) {
+                    // Will redirect to login
+                }
+
+                // Check if cart is empty
+                const cart = cartManager.getCart();
+                if (cart.length === 0) {
+                    window.location.href = '/cart';
+                }
+
+                // Display order summary
+                function displayOrderSummary() {
+                    const cart = cartManager.getCart();
+                    const total = cartManager.getTotal();
+
+                    document.getElementById('order-summary').innerHTML = `
+        ${cart.map(item => `
+          <div style="display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid var(--border-color);">
+            <div>
+              <p><strong>${item.name}</strong></p>
+              <p style="font-size: 0.875rem; color: var(--text-secondary);">
+                ${item.quantity} x $${item.price.toFixed(2)}
+              </p>
+            </div>
+            <p><strong>$${(item.price * item.quantity).toFixed(2)}</strong></p>
+          </div>
+        `).join('')}
+      `;
+
+                    document.getElementById('order-total').textContent = `Total: $${total.toFixed(2)}`;
+                }
+
+                // Handle payment form submission
+                document.getElementById('payment-form').addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    clearError();
+
+                    const submitBtn = document.getElementById('submit-btn');
+                    submitBtn.disabled = true;
+                    submitBtn.textContent = 'Procesando...';
+
+                    try {
+                        const orderData = {
+                            items: cartManager.getOrderItems(),
+                            paymentMethod: 'CreditCard',
+                            paymentDetails: {
+                                cardNumber: document.getElementById('cardNumber').value,
+                                cvv: document.getElementById('cvv').value,
+                                expirationMonth: document.getElementById('expirationMonth').value,
+                                expirationYear: document.getElementById('expirationYear').value,
+                                cardholderName: document.getElementById('cardholderName').value,
+                                currency: 'USD'
+                            }
+                        };
+
+                        const response = await api.createOrder(orderData);
+
+                        if (response.status === 'success') {
+                            // Clear cart
+                            cartManager.clearCart();
+
+                            // Show success and redirect
+                            showNotification('¡Compra realizada exitosamente!', 'success');
+                            setTimeout(() => {
+                                window.location.href = '/checkout/success';
+                            }, 1500);
+                        }
+                    } catch (error) {
+                        submitBtn.disabled = false;
+                        submitBtn.textContent = 'Confirmar Compra';
+
+                        let errorMessage = error.message;
+
+                        // Check for specific error types
+                        if (errorMessage.includes('stock') || errorMessage.includes('insuficiente')) {
+                            errorMessage = '❌ Stock insuficiente. Por favor, revisa tu carrito.';
+                        } else if (errorMessage.includes('pago') || errorMessage.includes('payment') || errorMessage.includes('declined')) {
+                            errorMessage = '❌ Pago rechazado. Verifica los datos de tu tarjeta.';
+                        }
+
+                        showError(errorMessage);
+                    }
+                });
+
+                // Display summary on load
+                displayOrderSummary();
+
+                // Copy to clipboard functionality
+                async function copyToClipboard(text, btn) {
+                    try {
+                        await navigator.clipboard.writeText(text);
+                        const originalText = btn.textContent;
+                        btn.textContent = '¡Copiado!';
+                        btn.classList.add('btn-primary');
+                        btn.classList.remove('btn-outline');
+
+                        setTimeout(() => {
+                            btn.textContent = originalText;
+                            btn.classList.remove('btn-primary');
+                            btn.classList.add('btn-outline');
+                        }, 2000);
+
+                        showNotification('Número de tarjeta copiado al portapapeles', 'success');
+                    } catch (err) {
+                        showNotification('Error al copiar el texto', 'error');
+                    }
+                }
+            </script>
+</body>
+
+</html>

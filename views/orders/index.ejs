@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>
+    <%= title %>
+  </title>
+  <link rel="stylesheet" href="/css/main.css">
+</head>
+
+<body>
+  <%- include('../partials/header') %>
+
+    <main class="container">
+      <h1 style="margin: 2rem 0;">Mis Pedidos</h1>
+
+      <div id="orders-container">
+        <div class="loading-container">
+          <div class="spinner"></div>
+          <p>Cargando pedidos...</p>
+        </div>
+      </div>
+
+      <div id="pagination-container"></div>
+    </main>
+
+    <%- include('../partials/footer') %>
+
+      <script src="/js/ui.js"></script>
+      <script src="/js/api.js"></script>
+      <script src="/js/auth.js"></script>
+      <script src="/js/cart.js"></script>
+
+      <script>
+        // Check authentication
+        if (!authManager.requireAuth()) {
+          // Will redirect to login
+        }
+
+        let currentPage = 1;
+        const limit = 10;
+
+        async function loadOrders() {
+          try {
+            const response = await api.getUserOrders(currentPage, limit);
+            displayOrders(response.data.orders);
+            displayPagination(response.data.pagination);
+          } catch (error) {
+            document.getElementById('orders-container').innerHTML = `
+          <div class="empty-state">
+            <h2>Error al cargar pedidos</h2>
+            <p>${error.message}</p>
+          </div>
+        `;
+          }
+        }
+
+        function displayOrders(orders) {
+          const container = document.getElementById('orders-container');
+
+          if (!orders || orders.length === 0) {
+            container.innerHTML = `
+          <div class="empty-state">
+            <h2>No tienes pedidos aún</h2>
+            <p>Explora nuestro catálogo y realiza tu primera compra</p>
+            <a href="/" class="btn btn-primary">Ir al Catálogo</a>
+          </div>
+        `;
+            return;
+          }
+
+          container.innerHTML = orders.map(order => `
+        <div class="card" style="margin-bottom: 1.5rem;">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem; margin-bottom: 1rem;">
+            <div>
+              <h2>Pedido #${order.id}</h2>
+              <p style="color: var(--text-secondary);">${formatDate(order.createdAt)}</p>
+            </div>
+            <span class="order-status order-status-${order.status.toLowerCase()}">
+              ${getStatusText(order.status)}
+            </span>
+          </div>
+          
+          <div>
+            <p><strong>Total:</strong> $${parseFloat(order.totalAmount).toFixed(2)}</p>
+            <p><strong>Productos:</strong> ${order.items ? order.items.length : 0} item(s)</p>
+          </div>
+          
+          <a href="/orders/${order.id}" class="btn btn-outline" style="margin-top: 1rem;">
+            Ver Detalle
+          </a>
+        </div>
+      `).join('');
+        }
+
+        function displayPagination(pagination) {
+          const container = document.getElementById('pagination-container');
+          if (!pagination) return;
+
+          const { currentPage: page, totalPages } = pagination;
+
+          if (totalPages <= 1) {
+            container.innerHTML = '';
+            return;
+          }
+
+          let paginationHTML = '<div class="pagination">';
+
+          // Previous button
+          paginationHTML += `
+        <button 
+          onclick="changePage(${page - 1})"
+          ${page === 1 ? 'disabled' : ''}>
+          ← Anterior
+        </button>
+      `;
+
+          // Page numbers
+          for (let i = 1; i <= totalPages; i++) {
+            paginationHTML += `
+          <button 
+            onclick="changePage(${i})"
+            class="${i === page ? 'active' : ''}">
+            ${i}
+          </button>
+        `;
+          }
+
+          // Next button
+          paginationHTML += `
+        <button 
+          onclick="changePage(${page + 1})"
+          ${page === totalPages ? 'disabled' : ''}>
+          Siguiente →
+        </button>
+      `;
+
+          paginationHTML += '</div>';
+          container.innerHTML = paginationHTML;
+        }
+
+        function changePage(page) {
+          currentPage = page;
+          loadOrders();
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function getStatusText(status) {
+          const statusMap = {
+            'COMPLETED': 'Completado',
+            'PENDING': 'Pendiente',
+            'CANCELED': 'Cancelado',
+            'PAYMENT_FAILED': 'Pago Fallido'
+          };
+          return statusMap[status] || status;
+        }
+
+        // Load orders on page load
+        loadOrders();
+      </script>
+</body>
+
+</html>

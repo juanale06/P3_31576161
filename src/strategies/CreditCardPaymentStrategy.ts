@@ -33,7 +33,7 @@ interface FakePaymentResponse {
 export class CreditCardPaymentStrategy extends PaymentStrategy {
     private readonly apiUrl = 'https://fakepayment.onrender.com/payments';
     private readonly apiKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiZmFrZSBwYXltZW50IiwiZGF0ZSI6IjIwMjYtMDEtMjBUMjI6MDY6MDYuNTE0WiIsImlhdCI6MTc2ODk0Njc2Nn0.jcifI7l3c3RWcr5gkbtpnykypjskqf9nB-aHWfmn3_s';
-    private readonly timeout = 60000; // 1 minuto
+    private readonly timeout = 300000; // 5 minutos
 
     async processPayment(
         amount: number,
@@ -97,7 +97,7 @@ export class CreditCardPaymentStrategy extends PaymentStrategy {
         } catch (error: any) {
             // Handle network errors or timeouts
             if (error.name === 'AbortError') {
-                console.log('⏱️ Timeout de pago (>10s)');
+                console.log('⏱️ Timeout de pago (>5 min)');
                 return {
                     success: false,
                     errorCode: 'TIMEOUT',

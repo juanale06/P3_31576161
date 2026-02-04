@@ -11,16 +11,33 @@ import productRoutes, { selfHealingRouter } from './routes/products.js';
 import categoryRoutes from './routes/categories.js';
 import tagRoutes from './routes/tags.js';
 import orderRoutes from './routes/orders.js';
+import viewRoutes from './routes/views.js';
 
 import sequelize from './config/database.js';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 const app = express();
 
+// View engine setup
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, '../views'));
+
 // Middlewares
-app.use(helmet());
+app.use(helmet({
+  contentSecurityPolicy: false, // Disable for development to allow inline scripts
+}));
 app.use(cors());
 app.use(morgan('dev'));
 app.use(express.json());
+app.use(express.urlencoded({ extended: true })); // For parsing form data
+
+// Static files
+app.use(express.static(path.join(__dirname, '../public')));
 
 // Configuración de Swagger
 const swaggerOptions = {
@@ -308,14 +325,53 @@ Para probar los endpoints protegidos:
 const swaggerSpec = swaggerJsdoc(swaggerOptions);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
-// Rutas
-app.use('/auth', authRoutes);
-app.use('/users', userRoutes);
-app.use('/categories', categoryRoutes);
-app.use('/tags', tagRoutes);
-app.use('/products', productRoutes);
-app.use('/orders', orderRoutes);
-app.use('/p', selfHealingRouter); // Self-healing URL router      
+// API Routes (with /api prefix to separate from view routes)
+app.use('/api/auth', authRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/categories', categoryRoutes);
+app.use('/api/tags', tagRoutes);
+app.use('/api/products', productRoutes);
+app.use('/api/orders', orderRoutes);
+app.use('/p', selfHealingRouter); // Self-healing URL router
+
+// System API endpoints
+app.get('/api/about', (_req: Request, res: Response) => {
+  res.status(200).json({
+    status: 'success',
+    data: {
+      nombreCompleto: 'Juan Dawaher',
+      cedula: '31576161',
+      seccion: 'SECCIÓN 2',
+    },
+  });
+});
+
+app.get('/api/ping', (_req: Request, res: Response) => {
+  res.status(200).send();
+});
+
+app.get('/api', (_req: Request, res: Response) => {
+  res.json({
+    message: 'API RESTful por Juan Dawaher - SECCIÓN 2',
+    endpoints: {
+      about: '/api/about',
+      ping: '/api/ping',
+      docs: '/api-docs',
+      auth: {
+        register: '/api/auth/register',
+        login: '/api/auth/login',
+      },
+      users: '/api/users',
+      products: '/api/products',
+      categories: '/api/categories',
+      tags: '/api/tags',
+      orders: '/api/orders',
+    },
+  });
+});
+
+// View Routes (serve EJS pages) - must be last to not interfere with API routes
+app.use('/', viewRoutes);
 
 /**
 * @swagger

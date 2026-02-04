@@ -1,27 +1,43 @@
 {
   "compilerOptions": {
-    "target":"ES2022",
-    "module":"NodeNext",
-    "moduleResolution":"NodeNext",
-    "outDir":"./dist",
-    "rootDir":"./src",
-    "strict":true,
-    "esModuleInterop":true,
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "strict": true,
+    "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
-    "skipLibCheck":true,
-    "forceConsistentCasingInFileNames":true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
     "baseUrl": "./src",
     "declaration": false,
     "paths": {
-      "@controllers/*": ["controllers/*"],
-      "@models/*": ["models/*"],
-      "@routes/*": ["routes/*"],
-      "@middlewares/*": ["middlewares/*"],
-      "@utils/*": ["utils/*"],
-      "@config/*": ["config/*"],
-      "@views/*": ["views/*"]
+      "@controllers/*": [
+        "controllers/*"
+      ],
+      "@models/*": [
+        "models/*"
+      ],
+      "@routes/*": [
+        "routes/*"
+      ],
+      "@middlewares/*": [
+        "middlewares/*"
+      ],
+      "@utils/*": [
+        "utils/*"
+      ],
+      "@config/*": [
+        "config/*"
+      ],
+      "@views/*": [
+        "views/*"
+      ]
     },
-    "types": ["node"],
+    "types": [
+      "node"
+    ],
     "sourceMap": true,
     "inlineSources": true,
     "noImplicitAny": true,
@@ -32,8 +48,18 @@
     "alwaysStrict": true,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
+    "useDefineForClassFields": false,
     "strictPropertyInitialization": false
   },
-  "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist", "tests", "**/*.spec.ts", "**/*.test.ts", "src/__tests__"]
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "tests",
+    "**/*.spec.ts",
+    "**/*.test.ts",
+    "src/__tests__"
+  ]
 }
